@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registre — Suivi d'investissements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EEEAE0;
+    --paper-2: #E6E1D3;
+    --ink: #17231C;
+    --ink-soft: #52605A;
+    --line: #C7BFA9;
+    --emerald: #2F6B4F;
+    --emerald-soft: #DCE7DF;
+    --burgundy: #7C3232;
+    --burgundy-soft: #EFDEDA;
+    --brass: #AD8A54;
+    --white: #FBFAF5;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px);
+    background-size: 100% 42px;
+    background-attachment: local;
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding: 48px 24px 80px;
+  }
+  .wrap{max-width:1040px;margin:0 auto;}
+
+  /* Header */
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 18px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 6px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight: 500;
+    font-size: 34px;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .today{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-align:right;
+  }
+
+  /* Dashboard */
+  .dash{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    margin-bottom: 40px;
+  }
+  .card{
+    background: var(--white);
+    padding: 22px 24px;
+    position: relative;
+  }
+  .card .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    display:block;
+  }
+  .card .value{
+    font-family:'Fraunces', serif;
+    font-size: 30px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .card .sub{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+  .card.positive .value{ color: var(--emerald); }
+  .card.negative .value{ color: var(--burgundy); }
+
+  /* Layout: form + ledger */
+  .grid{
+    display:grid;
+    grid-template-columns: 340px 1fr;
+    gap: 32px;
+    align-items:start;
+  }
+  @media (max-width: 800px){
+    .grid{ grid-template-columns: 1fr; }
+    .dash{ grid-template-columns: 1fr; }
+  }
+
+  .panel{
+    background: var(--white);
+    border: 1px solid var(--ink);
+    padding: 24px;
+    position: sticky;
+    top: 24px;
+  }
+  .panel h2{
+    font-family:'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 500;
+    margin: 0 0 4px;
+  }
+  .panel .hint{
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 0 0 20px;
+    line-height: 1.5;
+  }
+  label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 14px 0 6px;
+  }
+  label:first-of-type{ margin-top:0; }
+  input{
+    width:100%;
+    border: none;
+    border-bottom: 1.5px solid var(--line);
+    background: transparent;
+    padding: 8px 2px;
+    font-family:'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s ease;
+  }
+  input:focus{ border-color: var(--emerald); }
+  input[type="number"]{ font-family:'IBM Plex Mono', monospace; }
+  .field-row{ display:flex; gap:12px; }
+  .field-row > div{ flex:1; }
+
+  button.submit{
+    width:100%;
+    margin-top: 24px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 13px 16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .15s ease, transform .1s ease;
+  }
+  button.submit:hover{ background: var(--emerald); }
+  button.submit:active{ transform: scale(0.98); }
+
+  .error{
+    color: var(--burgundy);
+    font-size: 12.5px;
+    margin-top: 10px;
+    display:none;
+  }
+
+  /* Ledger list */
+  .ledger-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom: 14px;
+  }
+  .ledger-title h2{
+    font-family:'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 500;
+    margin:0;
+  }
+  .count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .entry{
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--ink);
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    position: relative;
+    animation: slideIn .25s ease;
+  }
+  .entry.gain{ border-left-color: var(--emerald); }
+  .entry.loss{ border-left-color: var(--burgundy); }
+  @keyframes slideIn{
+    from{ opacity:0; transform: translateY(-6px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .entry-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 12px;
+  }
+  .entry-name{
+    font-family:'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .entry-date{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .stamp{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    width: 52px;
+    height: 52px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    transform: rotate(-6deg);
+    flex-shrink:0;
+    line-height:1.1;
+  }
+  .stamp.gain{ color: var(--emerald); }
+  .stamp.loss{ color: var(--burgundy); }
+
+  .entry-rows{
+    margin-top: 12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+  .row-line{
+    display:flex;
+    align-items:baseline;
+    gap: 6px;
+    padding: 3px 0;
+    color: var(--ink-soft);
+  }
+  .row-line .rl-label::after{
+    content: "";
+    display:inline-block;
+    width: 6px;
+  }
+  .row-line .rl-fill{
+    flex:1;
+    border-bottom: 1px dotted var(--line);
+    margin: 0 4px;
+    transform: translateY(-4px);
+  }
+  .row-line .rl-val{ color: var(--ink); font-weight: 500; }
+  .row-line.net{
+    border-top: 1px solid var(--line);
+    margin-top: 4px;
+    padding-top: 8px;
+    color: var(--ink);
+  }
+  .row-line.net .rl-val{ font-size:14px; }
+
+  .del{
+    position:absolute;
+    top: 14px;
+    right: 16px;
+    background:none;
+    border:none;
+    color: var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    cursor:pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .del:hover{ color: var(--burgundy); }
+
+  .empty{
+    background: var(--white);
+    border: 1px dashed var(--line);
+    padding: 40px 24px;
+    text-align:center;
+    color: var(--ink-soft);
+  }
+  .empty p{ font-size: 14px; margin: 6px 0 0; }
+  .empty .big{
+    font-family:'Fraunces', serif;
+    font-size: 18px;
+    color: var(--ink);
+  }
+
+  footer{
+    margin-top: 40px;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Registre personnel</p>
+      <h1>Suivi d'investissements</h1>
+    </div>
+    <div class="today" id="today"></div>
+  </header>
+
+  <div class="dash">
+    <div class="card">
+      <span class="label">Argent investi</span>
+      <div class="value" id="totalInvested">0,00 €</div>
+      <div class="sub" id="countSub">0 investissement</div>
+    </div>
+    <div class="card" id="cardBenef">
+      <span class="label">Bénéfices nets</span>
+      <div class="value" id="totalBenef">0,00 €</div>
+      <div class="sub" id="marginSub">— marge</div>
+    </div>
+    <div class="card" id="cardSolde">
+      <span class="label">Solde total</span>
+      <div class="value" id="totalSolde">0,00 €</div>
+      <div class="sub">investi + bénéfices</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Ajouter un investissement</h2>
+      <p class="hint">Renseigne une ligne, elle s'ajoute au registre instantanément.</p>
+
+      <label>Niche / nom</label>
+      <input type="text" id="f-niche" placeholder="Ex. Accessoires fitness">
+
+      <label>Montant investi (€)</label>
+      <input type="number" id="f-invested" placeholder="0.00" step="0.01">
+
+      <div class="field-row">
+        <div>
+          <label>Rentes (€)</label>
+          <input type="number" id="f-rentes" placeholder="0.00" step="0.01">
+        </div>
+        <div>
+          <label>Profit (€)</label>
+          <input type="number" id="f-profit" placeholder="0.00" step="0.01">
+        </div>
+      </div>
+
+      <label>Frais de livraison (€)</label>
+      <input type="number" id="f-frais" placeholder="0.00" step="0.01">
+
+      <button class="submit" id="submitBtn">Enregistrer la ligne</button>
+      <p class="error" id="formError">Indique au moins une niche et un montant investi.</p>
+    </div>
+
+    <div>
+      <div class="ledger-title">
+        <h2>Registre des lignes</h2>
+        <span class="count" id="listCount">0 ligne</span>
+      </div>
+      <div id="list"></div>
+    </div>
+  </div>
+
+  <footer id="saveStatus">Enregistrement automatique · données conservées sur cet ordinateur</footer>
+</div>
+
+<script>
+const STORAGE_KEY = 'investments';
+let entries = [];
+
+const fmt = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+const fmtPct = (n) => (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+
+document.getElementById('today').textContent = new Date().toLocaleDateString('fr-FR', {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+});
+
+function netOf(e){ return (e.rentes || 0) + (e.profit || 0) - (e.frais || 0); }
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    entries = raw ? JSON.parse(raw) : [];
+  }catch(err){
+    entries = [];
+  }
+  render();
+}
+
+function persist(){
+  const status = document.getElementById('saveStatus');
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    status.textContent = 'Enregistrement automatique · données conservées sur cet ordinateur';
+  }catch(err){
+    status.textContent = "Échec de l'enregistrement — la ligne reste visible dans cette session";
+  }
+}
+
+function render(){
+  const totalInvested = entries.reduce((s,e) => s + (e.invested || 0), 0);
+  const totalBenef = entries.reduce((s,e) => s + netOf(e), 0);
+  const totalSolde = totalInvested + totalBenef;
+  const margin = totalInvested > 0 ? (totalBenef / totalInvested) * 100 : 0;
+
+  document.getElementById('totalInvested').textContent = fmt.format(totalInvested);
+  document.getElementById('countSub').textContent = entries.length + (entries.length > 1 ? ' investissements' : ' investissement');
+  document.getElementById('totalBenef').textContent = fmt.format(totalBenef);
+  document.getElementById('marginSub').textContent = entries.length ? fmtPct(margin) + ' de marge' : '— marge';
+  document.getElementById('totalSolde').textContent = fmt.format(totalSolde);
+
+  document.getElementById('cardBenef').className = 'card ' + (totalBenef >= 0 ? 'positive' : 'negative');
+  document.getElementById('cardSolde').className = 'card ' + (totalSolde >= totalInvested ? 'positive' : 'negative');
+
+  document.getElementById('listCount').textContent = entries.length + (entries.length > 1 ? ' lignes' : ' ligne');
+
+  const list = document.getElementById('list');
+  if(entries.length === 0){
+    list.innerHTML = `<div class="empty">
+      <div class="big">Le registre est vide</div>
+      <p>Ajoute ta première ligne pour commencer le suivi.</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = entries.slice().reverse().map(e => {
+    const net = netOf(e);
+    const gain = net >= 0;
+    const pct = e.invested > 0 ? (net / e.invested) * 100 : 0;
+    return `
+    <div class="entry ${gain ? 'gain' : 'loss'}">
+      <button class="del" data-id="${e.id}">retirer</button>
+      <div class="entry-top">
+        <div>
+          <div class="entry-name">${escapeHtml(e.niche)}</div>
+          <div class="entry-date">${e.date}</div>
+        </div>
+        <div class="stamp ${gain ? 'gain' : 'loss'}">${fmtPct(pct)}</div>
+      </div>
+      <div class="entry-rows">
+        <div class="row-line"><span class="rl-label">Investi</span><span class="rl-fill"></span><span class="rl-val">${fmt.format(e.invested||0)}</span></div>
+        <div class="row-line"><span class="rl-label">Rentes</span><span class="rl-fill"></span><span class="rl-val">${fmt.format(e.rentes||0)}</span></div>
+        <div class="row-line"><span class="rl-label">Profit</span><span class="rl-fill"></span><span class="rl-val">${fmt.format(e.profit||0)}</span></div>
+        <div class="row-line"><span class="rl-label">Frais de livraison</span><span class="rl-fill"></span><span class="rl-val">−${fmt.format(e.frais||0)}</span></div>
+        <div class="row-line net"><span class="rl-label">Net</span><span class="rl-fill"></span><span class="rl-val">${fmt.format(net)}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.del').forEach(btn => {
+    btn.addEventListener('click', () => removeEntry(btn.dataset.id));
+  });
+}
+
+function escapeHtml(s){
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function removeEntry(id){
+  entries = entries.filter(e => String(e.id) !== String(id));
+  render();
+  persist();
+}
+
+document.getElementById('submitBtn').addEventListener('click', () => {
+  const niche = document.getElementById('f-niche').value.trim();
+  const invested = parseFloat(document.getElementById('f-invested').value);
+  const rentes = parseFloat(document.getElementById('f-rentes').value) || 0;
+  const profit = parseFloat(document.getElementById('f-profit').value) || 0;
+  const frais = parseFloat(document.getElementById('f-frais').value) || 0;
+
+  const errEl = document.getElementById('formError');
+  if(!niche || isNaN(invested)){
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  entries.push({
+    id: Date.now(),
+    niche, invested, rentes, profit, frais,
+    date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+  });
+
+  document.getElementById('f-niche').value = '';
+  document.getElementById('f-invested').value = '';
+  document.getElementById('f-rentes').value = '';
+  document.getElementById('f-profit').value = '';
+  document.getElementById('f-frais').value = '';
+  document.getElementById('f-niche').focus();
+
+  render();
+  persist();
+});
+
+['f-niche','f-invested','f-rentes','f-profit','f-frais'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') document.getElementById('submitBtn').click();
+  });
+});
+
+load();
+</script>
+</body>
+</html>
