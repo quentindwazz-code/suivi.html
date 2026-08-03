@@ -410,7 +410,7 @@ document.getElementById('today').textContent = new Date().toLocaleDateString('fr
   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
 });
 
-function netOf(e){ return (e.rentes || 0) + (e.profit || 0) - (e.frais || 0); }
+function netOf(e){ return (e.revenus || 0) + (e.profit || 0) - (e.frais || 0); }
 
 function load(){
   try{
@@ -474,7 +474,7 @@ function render(){
       </div>
       <div class="entry-rows">
         <div class="row-line"><span class="rl-label">Investi</span><span class="rl-fill"></span><span class="rl-val">${fmt.format(e.invested||0)}</span></div>
-        <div class="row-line"><span class="rl-label">Rentes</span><span class="rl-fill"></span><span class="rl-val">${fmt.format(e.rentes||0)}</span></div>
+        <div class="row-line"><span class="rl-label">revenus</span><span class="rl-fill"></span><span class="rl-val">${fmt.format(e.rentes||0)}</span></div>
         <div class="row-line"><span class="rl-label">Profit</span><span class="rl-fill"></span><span class="rl-val">${fmt.format(e.profit||0)}</span></div>
         <div class="row-line"><span class="rl-label">Frais de livraison</span><span class="rl-fill"></span><span class="rl-val">−${fmt.format(e.frais||0)}</span></div>
         <div class="row-line net"><span class="rl-label">Net</span><span class="rl-fill"></span><span class="rl-val">${fmt.format(net)}</span></div>
@@ -502,7 +502,7 @@ function removeEntry(id){
 document.getElementById('submitBtn').addEventListener('click', () => {
   const niche = document.getElementById('f-niche').value.trim();
   const invested = parseFloat(document.getElementById('f-invested').value);
-  const rentes = parseFloat(document.getElementById('f-rentes').value) || 0;
+  const revenus = parseFloat(document.getElementById('f-rentes').value) || 0;
   const profit = parseFloat(document.getElementById('f-profit').value) || 0;
   const frais = parseFloat(document.getElementById('f-frais').value) || 0;
 
@@ -515,13 +515,13 @@ document.getElementById('submitBtn').addEventListener('click', () => {
 
   entries.push({
     id: Date.now(),
-    niche, invested, rentes, profit, frais,
+    niche, invested, revenus, profit, frais,
     date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
   });
 
   document.getElementById('f-niche').value = '';
   document.getElementById('f-invested').value = '';
-  document.getElementById('f-rentes').value = '';
+  document.getElementById('f-revenus').value = '';
   document.getElementById('f-profit').value = '';
   document.getElementById('f-frais').value = '';
   document.getElementById('f-niche').focus();
@@ -530,7 +530,7 @@ document.getElementById('submitBtn').addEventListener('click', () => {
   persist();
 });
 
-['f-niche','f-invested','f-rentes','f-profit','f-frais'].forEach(id => {
+['f-niche','f-invested','f-revenus','f-profit','f-frais'].forEach(id => {
   document.getElementById(id).addEventListener('keydown', (e) => {
     if(e.key === 'Enter') document.getElementById('submitBtn').click();
   });
